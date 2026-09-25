@@ -1,0 +1,240 @@
+---
+name: Build QEMU Boxes
+'on':
+  workflow_dispatch: {}
+jobs:
+  setup:
+    name: Install prerequisites
+    runs-on:
+      - self-hosted
+      - Linux
+      - X64
+      - packer
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Install prerequisites
+        run: |
+          ./.github/workflows/scripts/qemu/install-prerequisites.sh
+      - name: Set version
+        id: version
+        run: |
+          echo "version=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+  debian:
+    name: Build Debian boxes
+    needs: setup
+    runs-on:
+      - self-hosted
+      - Linux
+      - packer
+      - X64
+    strategy:
+      fail-fast: false
+      matrix:
+        box:
+          - debian13
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Build base Debian install
+        run: |
+          ./.github/workflows/scripts/build-base.sh ansible-2.21 debian ${{ matrix.box }}
+      - name: Build base Debian box
+        run: |
+          ./.github/workflows/scripts/build-box.sh ansible-2.21 debian ${{ matrix.box }} base
+      - name: Cleanup base Debian install
+        run: |
+          rm -rf ./debian/01-base/output || /bin/true
+      - name: Get box SHA256 Hash
+        id: hash
+        run: |
+          echo "sha256=$(sha256sum ./debian/vagrant/boxes/${{ matrix.box }}_base/libvirt-amd64.box | awk '{print $1}')" >> $GITHUB_OUTPUT
+      - name: Copy box to NAS
+        env:
+          CATALOG_JSON: |
+            {
+              "name": "${{ matrix.box }}_base",
+              "versions": [
+                {
+                  "version": "${{ needs.setup.outputs.version }}",
+                  "providers": [
+                    {
+                      "name": "libvirt",
+                      "architecture": "amd64",
+                      "url": "/mnt/vagrant-boxes/${{ matrix.box }}_base/${{ needs.setup.outputs.version }}/libvirt-amd64.box",
+                      "checksum_type": "sha256",
+                      "checksum": "${{ steps.hash.outputs.sha256 }}"
+                    }
+                  ]
+                }
+              ]
+            }
+        run: |
+          mkdir -p /mnt/vagrant-boxes/${{ matrix.box }}_base/${{ needs.setup.outputs.version }}
+          cp ./debian/vagrant/boxes/${{ matrix.box }}_base/libvirt-amd64.box /mnt/vagrant-boxes/${{ matrix.box }}_base/${{ needs.setup.outputs.version }}/
+          echo "$CATALOG_JSON" > /mnt/vagrant-boxes/${{ matrix.box }}_base/catalog.json
+          echo "Copied box to NAS at /mnt/vagrant-boxes/${{ matrix.box }}_base/${{ needs.setup.outputs.version }}"
+      - name: Cleanup base Debian box
+        run: |
+          rm -f ./debian/vagrant/output || /bin/true
+          rm -f ./debian/vagrant/boxes/${{ matrix.box }}_base/libvirt-amd64.box || /bin/true
+  # fedora:
+  #   name: Build Fedora boxes
+  #   needs: setup
+  #   runs-on:
+  #     - self-hosted
+  #     - Linux
+  #     - packer
+  #     - X64
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       box:
+  #         - fedora43
+  #         - fedora44
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #     - name: Build Fedora box
+  #       run: |
+  #         ./.github/workflows/scripts/install-prerequisites.sh ansible-2.21
+  #         ./.github/workflows/scripts/build-base.sh ansible-2.21 fedora ${{ matrix.box }}
+  #         ./.github/workflows/scripts/build-box.sh ansible-2.21 fedora ${{ matrix.box }} base
+  # rocky_base:
+  #   name: Build Rocky boxes with base only
+  #   needs: setup
+  #   runs-on:
+  #     - self-hosted
+  #     - Linux
+  #     - packer
+  #     - qemu
+  #     - X64
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       box:
+  #         - name: rocky10
+  #           venv: ansible-2.21
+  #         - name: rocky10_ws
+  #           venv: ansible-2.21
+  #         - name: rocky9_ws
+  #           venv: ansible-2.21
+  #         - name: rocky8_ws
+  #           venv: ansible-2.16
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #     - name: Build Rocky box
+  #       run: |
+  #         ./.github/workflows/scripts/install-prerequisites.sh ${{ matrix.box.venv }}
+  #         ./.github/workflows/scripts/build-base.sh ${{ matrix.box.venv }} rocky ${{ matrix.box.name }}
+  #         ./.github/workflows/scripts/build-box.sh ${{ matrix.box.venv }} rocky ${{ matrix.box.name }} base
+  # rocky_cis:
+  #   name: Build Rocky boxes with CIS
+  #   needs: setup
+  #   runs-on:
+  #     - self-hosted
+  #     - Linux
+  #     - packer
+  #     - qemu
+  #     - X64
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       box:
+  #         - name: rocky9
+  #           venv: ansible-2.21
+  #         - name: rocky8
+  #           venv: ansible-2.16
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #     - name: Build Rocky CIS box
+  #       run: |
+  #         ./.github/workflows/scripts/install-prerequisites.sh ${{ matrix.box.venv }}
+  #         ./.github/workflows/scripts/build-base.sh ${{ matrix.box.venv }} rocky ${{ matrix.box.name }}
+  #         ./.github/workflows/scripts/build-box.sh ${{ matrix.box.venv }} rocky ${{ matrix.box.name }} base
+  #         ./.github/workflows/scripts/build-cis.sh ${{ matrix.box.venv }} rocky ${{ matrix.box.name }}
+  #         ./.github/workflows/scripts/build-box.sh ${{ matrix.box.venv }} rocky ${{ matrix.box.name }} cis
+  # ubuntu:
+  #   name: Build Ubuntu boxes
+  #   needs: setup
+  #   runs-on:
+  #     - self-hosted
+  #     - Linux
+  #     - packer
+  #     - qemu
+  #     - X64
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       box:
+  #         - ubuntu2204
+  #         - ubuntu2404
+  #         - ubuntu2604
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #     - name: Build Ubuntu box
+  #       run: |
+  #         ./.github/workflows/scripts/install-prerequisites.sh ansible-2.21
+  #         ./.github/workflows/scripts/build-base.sh ansible-2.21 ubuntu ${{ matrix.box }}
+  #         ./.github/workflows/scripts/build-box.sh ansible-2.21 ubuntu ${{ matrix.box }} base
+  # windows_base:
+  #   name: Build Windows boxes with base only
+  #   needs: setup
+  #   runs-on:
+  #     - self-hosted
+  #     - Linux
+  #     - packer
+  #     - qemu
+  #     - X64
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       box:
+  #         - w11_23h2
+  #         - w11_24h2
+  #         - w11_25h2
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #     - name: Build Windows box
+  #       run: |
+  #         mkdir -p ./windows/01-base/cd/qemu/virtio-win
+  #         cp -R /home/github-actions/virtio-win/* ./windows/01-base/cd/qemu/virtio-win/
+  #         ./.github/workflows/scripts/install-prerequisites.sh ansible-2.21
+  #         ./.github/workflows/scripts/build-base.sh ansible-2.21 windows ${{ matrix.box }}
+  #         ./.github/workflows/scripts/build-box.sh ansible-2.21 windows ${{ matrix.box }} base
+  #         rm -rf ./windows/01-base/cd/qemu/virtio-win || /bin/true
+  # windows_cis:
+  #   name: Build Windows boxes with CIS
+  #   needs: setup
+  #   runs-on:
+  #     - self-hosted
+  #     - Linux
+  #     - packer
+  #     - qemu
+  #     - X64
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       box:
+  #         - w2019
+  #         - w2022
+  #         - w2025
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v6
+  #     - name: Build Windows box
+  #       run: |
+  #         mkdir -p ./windows/01-base/cd/qemu/virtio-win
+  #         cp -R /home/github-actions/virtio-win/* ./windows/01-base/cd/qemu/virtio-win/
+  #         ./.github/workflows/scripts/install-prerequisites.sh ansible-2.21
+  #         ./.github/workflows/scripts/build-base.sh ansible-2.21 windows ${{ matrix.box }}
+  #         ./.github/workflows/scripts/build-box.sh ansible-2.21 windows ${{ matrix.box }} base
+  #         ./.github/workflows/scripts/build-cis.sh ansible-2.21 windows ${{ matrix.box }}
+  #         ./.github/workflows/scripts/build-box.sh ansible-2.21 windows ${{ matrix.box }} cis
+  #         rm -rf ./windows/01-base/cd/qemu/virtio-win || /bin/true

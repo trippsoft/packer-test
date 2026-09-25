@@ -4,7 +4,7 @@ name: Build QEMU Boxes
   workflow_dispatch: {}
 jobs:
   setup:
-    name: Install prerequisites
+    name: Setup
     runs-on:
       - self-hosted
       - Linux
@@ -19,6 +19,7 @@ jobs:
       - name: Set version
         id: version
         run: |
+          echo "Version: $(date +'%Y.%m.%d')"
           echo "version=$(date +'%Y.%m.%d')" >> $GITHUB_OUTPUT
     outputs:
       version: ${{ steps.version.outputs.version }}
@@ -35,6 +36,7 @@ jobs:
       matrix:
         box:
           - debian13
+          - debian12
     steps:
       - name: Checkout
         uses: actions/checkout@v6

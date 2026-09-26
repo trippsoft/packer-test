@@ -21,7 +21,6 @@ variable "headless" {
 
 locals {
     vm_name = "${var.vm_name_prefix}_${var.vm_name_suffix}"
-    hostname = replace("${local.vm_name}", "_", "-")
     project_directory = replace(path.root, "/debian/vagrant", "")
     previous_vm_directory = "${local.project_directory}/debian/${var.relative_previous_vm_directory}"
     source_path = "${local.previous_vm_directory}/output/${var.vm_name_prefix}/${var.vm_name_prefix}_${var.previous_vm_suffix}"

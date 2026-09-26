@@ -55,7 +55,7 @@ jobs:
           echo "sha256=$(sha256sum ./debian/vagrant/boxes/${{ matrix.box }}_base/libvirt-amd64.box | awk '{print $1}')" >> $GITHUB_OUTPUT
       - name: Copy box to NAS
         env:
-          CATALOG_JSON: |
+          CATALOG_JSON: |-
             {
               "name": "${{ matrix.box }}_base",
               "versions": [
@@ -80,7 +80,7 @@ jobs:
           echo "Copied box to NAS at /mnt/vagrant-boxes/${{ matrix.box }}_base/${{ needs.setup.outputs.version }}"
       - name: Cleanup base Debian box
         run: |
-          rm -f ./debian/vagrant/output || /bin/true
+          rm -rf ./debian/vagrant/output || /bin/true
           rm -f ./debian/vagrant/boxes/${{ matrix.box }}_base/libvirt-amd64.box || /bin/true
   # fedora:
   #   name: Build Fedora boxes

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "~/venv/$1/bin/activate"
+source "$HOME/venv/$1/bin/activate"
 
 PACKER_VAR_FILE="./$2/01-base/$3.pkrvars.hcl"
 

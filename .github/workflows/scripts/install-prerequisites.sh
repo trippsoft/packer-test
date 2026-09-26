@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source ~/venv/ansible-2.21/bin/activate
+source "$HOME/venv/ansible-2.21/bin/activate"
 
 ansible-galaxy collection install --upgrade trippsc2.cis trippsc2.first_steps trippsc2.template 'community.general<12.0.0' 'ansible.windows<3.6.0'
 

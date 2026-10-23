@@ -33,7 +33,7 @@ build {
 
         extra_arguments = [
             "-e",
-            "target_hostname=${var.vm_name_prefix} ansible_password=${build.Password}",
+            "ansible_password=${build.Password}",
             "--scp-extra-args",
             "'-O'"
         ]

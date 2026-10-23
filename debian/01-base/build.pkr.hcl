@@ -28,7 +28,7 @@ build {
 
         extra_arguments = [
             "-e",
-            "ansible_password=vagrant",
+            "ansible_password=${build.Password}",
             "--scp-extra-args",
             "'-O'"
         ]

@@ -1,0 +1,12 @@
+---
+- name: Seal for template
+  gather_facts: false
+  hosts:
+    - default
+  roles:
+    - role: trippsc2.template.windows
+      vars:
+        win_target_hostname: "{{ target_hostname }}"
+        win_is_vagrant: true
+        win_set_sshd_manual: true
+        win_use_bleachbit: false

@@ -1,0 +1,8 @@
+---
+- name: Seal for template
+  hosts:
+    - default
+  roles:
+    - role: trippsc2.template.ubuntu
+      vars:
+        ubuntu_is_vagrant: true

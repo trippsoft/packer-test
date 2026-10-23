@@ -82,6 +82,9 @@ jobs:
         run: |
           rm -rf ./debian/vagrant/output || /bin/true
           rm -f ./debian/vagrant/boxes/${{ matrix.box }}_base/libvirt-amd64.box || /bin/true
+      - name: Cleanup old Debian box versions
+        run: |
+          find /mnt/vagrant-boxes/${{ matrix.box }}_base/ -mindepth 1 -maxdepth 1 -type d ! -name "${{ needs.setup.outputs.version }}" -exec rm -rf {} + || /bin/true
   # fedora:
   #   name: Build Fedora boxes
   #   needs: setup

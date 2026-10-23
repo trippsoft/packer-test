@@ -11,6 +11,9 @@ source "qemu" "qemu" {
     vm_name = local.vm_name
     headless = var.headless
     display = "none"
+    efi_boot = true
+    efi_firmware_code = "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+    use_pflash = true
     machine_type = "q35"
 
     http_directory = local.http_directory
@@ -28,7 +31,9 @@ source "qemu" "qemu" {
 
     boot_wait = "12s"
     boot_command = [
-        "<down><tab>priority=critical net.ifnames=0 biosdevname=0 auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<enter>"
+        "<down>e",
+        "<down><down><down><end>priority=critical net.ifnames=0 biosdevname=0 auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",
+        "<leftCtrlOn>x<leftCtrlOff>"
     ]
 
     communicator = "ssh"

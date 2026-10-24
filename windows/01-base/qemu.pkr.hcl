@@ -11,15 +11,15 @@ source "qemu" "qemu" {
     vm_name = local.vm_name
     headless = var.headless
     efi_boot = true
-    efi_firmware_code = "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+    efi_firmware_code = "/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd"
     use_pflash = true
     machine_type = "q35"
 
     qemuargs = [
-        ["-cpu", "host,hv_relaxed,hv_vapic,hv_spinlocks=0x1fff,hv_vpindex,hv_runtime,hv_synic,hv_frequencies,hv_tlbflush,hv_ipi,hv_avic"],
         ["-device", "virtio-tablet"]
     ]
 
+    cpu_model = "host"
     cores = 4
     memory = 8192
 
@@ -40,11 +40,10 @@ source "qemu" "qemu" {
         "<enter><wait><enter><wait><enter><wait><enter>"
     ]
 
-    communicator = "winrm"
-    winrm_username = "Administrator"
-    winrm_password = "Packer42-"
-    winrm_use_ssl = false
-    winrm_timeout = "40m"
+    communicator = "ssh"
+    ssh_username = "Administrator"
+    ssh_password = "Packer42-"
+    ssh_timeout = "40m"
 
     shutdown_command = "shutdown /s /t 10 /f"
     shutdown_timeout = "5m"

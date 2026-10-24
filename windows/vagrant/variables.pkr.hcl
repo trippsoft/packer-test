@@ -22,7 +22,9 @@ variable "headless" {
 locals {
     vm_name = "${var.vm_name_prefix}_${var.vm_name_suffix}"
     project_directory = replace(path.root, "/windows/vagrant", "")
+    hostname = "${replace(var.vm_name_prefix, "_", "-")}-${var.vm_name_suffix}"
     previous_vm_directory = "${local.project_directory}/windows/${var.relative_previous_vm_directory}"
+    efi_vars = "${local.previous_vm_directory}/output/${var.vm_name_prefix}/efivars.fd"
     source_path = "${local.previous_vm_directory}/output/${var.vm_name_prefix}/${var.vm_name_prefix}_${var.previous_vm_suffix}"
     output_directory = "${path.root}/output/${var.vm_name_prefix}_${var.vm_name_suffix}"
 }

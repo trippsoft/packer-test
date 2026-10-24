@@ -12,7 +12,7 @@ source "qemu" "qemu" {
     headless = var.headless
     display = "none"
     efi_boot = true
-    efi_firmware_code = "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+    efi_firmware_code = "/usr/share/edk2/ovmf/OVMF_CODE.fd"
     use_pflash = true
     machine_type = "q35"
 
@@ -29,7 +29,7 @@ source "qemu" "qemu" {
     iso_url = var.iso_url
     iso_checksum = var.iso_checksum
 
-    boot_wait = "12s"
+    boot_wait = "5s"
     boot_command = [
         "<down>e",
         "<down><down><down><end>priority=critical net.ifnames=0 biosdevname=0 auto=true preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",

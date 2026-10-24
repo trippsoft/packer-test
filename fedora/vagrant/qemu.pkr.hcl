@@ -12,7 +12,8 @@ source "qemu" "qemu" {
     headless = var.headless
     display = "none"
     efi_boot = true
-    efi_firmware_code = "/usr/share/OVMF/OVMF_CODE.secboot.fd"
+    efi_firmware_code = "/usr/share/edk2/ovmf/OVMF_CODE.secboot.fd"
+    efi_firmware_vars = local.efi_vars
     use_pflash = true
     machine_type = "q35"
 

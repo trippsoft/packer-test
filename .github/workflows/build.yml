@@ -234,7 +234,7 @@ jobs:
       matrix:
         box:
           - name: rocky9
-            venv: ansible-2.21
+            venv: ansible-2.16
           - name: rocky8
             venv: ansible-2.16
     env:
@@ -409,7 +409,6 @@ jobs:
       fail-fast: false
       matrix:
         box:
-          - w11_23h2
           - w11_24h2
           - w11_25h2
     env:

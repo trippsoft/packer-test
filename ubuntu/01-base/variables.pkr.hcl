@@ -32,6 +32,6 @@ variable "headless" {
 locals {
     vm_name = "${var.vm_name_prefix}_base"
     project_directory = replace(path.root, "/ubuntu/01-base", "")
-    qemu_http_directory = "${path.root}/http/${var.vm_name_prefix}"
-    qemu_output_directory = "${path.root}/output/${var.vm_name_prefix}"
+    http_directory = "${path.root}/http/${var.vm_name_prefix}"
+    output_directory = "${path.root}/output/${var.vm_name_prefix}"
 }

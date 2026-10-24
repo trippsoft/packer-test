@@ -12,7 +12,7 @@ build {
 
     provisioner "windows-update" {
         search_criteria = "BrowseOnly=0 and IsInstalled=0"
-        timeout = "40m"
+        timeout = "90m"
 
         filters = [
             "exclude:$_.Title -like '*Preview*'",

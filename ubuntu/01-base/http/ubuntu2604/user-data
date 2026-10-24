@@ -27,26 +27,35 @@ autoinstall:
       - type: disk
         id: vda
         path: /dev/vda
-        ptable: msdos
         wipe: superblock
-        grub_device: true
+        preserve: false
+        ptable: gpt
       - type: partition
         id: vda1
         device: vda
         number: 1
-        size: 512MB
+        size: 1GB
         flag: boot
+        partition_type: EF00
+        wipe: superblock
+        preserve: false
+        grub_device: true
       - type: partition
         id: vda2
         device: vda
         number: 2
-        size: 39GB
+        size: 512MB
+      - type: partition
+        id: vda3
+        device: vda
+        number: 3
+        size: -1
         flag: lvm
       - type: lvm_volgroup
         id: vg_ubuntu
         name: vg_ubuntu
         devices:
-          - vda2
+          - vda3
       - type: lvm_partition
         id: root-lv
         volgroup: vg_ubuntu
@@ -85,6 +94,12 @@ autoinstall:
       - type: format
         id: vda1-fs
         volume: vda1
+        fstype: fat32
+        label: efi
+        grub_device: true
+      - type: format
+        id: vda2-fs
+        volume: vda2
         fstype: ext4
       - type: format
         id: root-fs
@@ -117,6 +132,10 @@ autoinstall:
       - type: mount
         id: vda1-mount
         device: vda1-fs
+        path: /boot/efi
+      - type: mount
+        id: vda2-mount
+        device: vda2-fs
         path: /boot
       - type: mount
         id: root-mount
